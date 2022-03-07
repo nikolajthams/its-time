@@ -9,8 +9,7 @@ if(use.tikz){tikz(file=paste0(path, ".tex"),width = 6, height = 2,
                   packages = c("\\usepackage{tikz}","\\usepackage{amssymb,amsmath}"))}
 
 sigma.labels <- c('1' = "do($X_{t} := \\sigma)$", 
-                  '5' = "do($X_{t} := 5\\sigma)$",
-                  '0' = "do($X_{t} := 0)$"
+                  '5' = "do($X_{t} := 5\\sigma)$"
 )
 
 df <- read_delim("results.csv", delim=",", col_types=cols(sigmaout="f", method="f", error="d")) %>% 
@@ -20,7 +19,6 @@ df <- read_delim("results.csv", delim=",", col_types=cols(sigmaout="f", method="
   select(-one_of(c("rep"))) %>%
   pivot_longer(cols=c("CIV", "NIV"), names_to = "method", values_to="error")
 
-# lims = c(min(c(df$error, df$OLS)), max(c(df$error, df$OLS)))
 lims = c(min(c(df$error, df$OLS)), 20)
 
 p <- ggplot(df, aes(x=error, y=OLS, colour = error<OLS, shape=method)) + 
@@ -43,11 +41,5 @@ print(p)
 if(use.tikz){
   dev.off()
   print(p)
-  
-  # lines <- readLines(con=paste0(path, ".tex"))
-  # lines <- lines[-which(grepl("\\path\\[clip\\]*", lines,perl=F))]
-  # lines <- lines[-which(grepl("\\path\\[use as bounding box*", lines,perl=F))]
-  # writeLines(lines,con=paste0(path, ".tex"))
-  
   ggsave(paste0(path, ".pdf"))
 }

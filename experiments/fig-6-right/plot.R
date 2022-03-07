@@ -25,7 +25,6 @@ p <- ggplot(df, aes(x=logdiff, fill=factor(niv_all<niv_single))) +
        y=NULL,
        fill=NULL)+
   xlim(c(-1.2,1.2)*maxdiff)+
-  # scale_fill_brewer(palette="Dark2") +
   scale_fill_brewer(palette="Dark2", breaks =c("TRUE", "FALSE"), labels=c("$I^{1:3}$ better", "$I^1$ better")) +
   theme_minimal()
 

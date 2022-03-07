@@ -18,10 +18,6 @@ if(use.tikz){tikz(file=paste0(path, ".tex"),width = 3.75, height = 1.75,
 # Load
 df <- read_delim("results.csv", delim=",", col_types=cols(n="f", method="f")) %>%
   subset(as.numeric(as.character(n)) <= 10000)
-df.means <- df %>% group_by(method, n) %>%
-  summarize(upper = quantile(error, 0.975),
-            lower = quantile(error, 0.025),
-            error = median(error))
 
 
 # Geom jitter below is downsampled for better tikz-plotting
