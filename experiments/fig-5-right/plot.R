@@ -8,7 +8,7 @@ options(tikzMetricPackages = c("\\usepackage[utf8]{inputenc}",
                                "\\usepackage{amssymb,amsmath}"))
 
 use.tikz <- T
-path = "fig-6-right"
+path = "fig-5-right"
 if(use.tikz){tikz(file=paste0(path, ".tex"),width = 3, height = 1.75,
                   packages = c("\\usepackage{tikz}","\\usepackage{amssymb,amsmath}"))}
 

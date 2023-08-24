@@ -57,6 +57,6 @@ for rep_mat in tqdm(range(1000)):
 
 
 df = pd.DataFrame(results)
-df.to_csv("experiments/fig-6-right/results.csv", index=False)
+df.to_csv("experiments/fig-5-right/results.csv", index=False)
 
 
