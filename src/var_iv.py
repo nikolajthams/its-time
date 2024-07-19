@@ -1,11 +1,22 @@
 import numpy as np
 from pandas import Series, DataFrame
 import scipy.linalg as slg
+from scipy.stats import norm
 from src import civ
 from statsmodels.stats.sandwich_covariance import S_hac_simple
 
+def get_confidence_interval(estimate, covariance_matrix, alpha, n):
+    variances = civ.get_2d(np.diag(covariance_matrix))
+    standard_devs = np.sqrt(variances)
+    confidence_intervals = civ.col_bind(
+        estimate - norm.ppf(1-alpha/2) * standard_devs / np.sqrt(n),
+        estimate + norm.ppf(1-alpha/2) * standard_devs / np.sqrt(n)
+        )
+    return confidence_intervals
 
-def ts_civ(X, Y, I, W=None, only_I_as_condition=False):
+
+
+def ts_civ(X, Y, I, W=None, only_I_as_condition=False, confidence_intervals: bool=False, alpha=0.05):
     """
     Compute the ts-civ estimator from observations of time series I, X and Y
 
@@ -14,6 +25,8 @@ def ts_civ(X, Y, I, W=None, only_I_as_condition=False):
     - Y: Response time series. nparray shape: (n_obs,) or (n_obs, dims_Y)
     - I: Instrument time series. nparray shape: (n_obs,) or (n_obs, dims_I)
     """
+    assert (not confidence_intervals) or (W is None), 'Confidence intervals are only valid when the optimal weight matrix is computed (and none provided)'
+
     if isinstance(X, (Series, DataFrame)):
         X = X.to_numpy()
     if isinstance(Y, (Series, DataFrame)):
@@ -38,13 +51,23 @@ def ts_civ(X, Y, I, W=None, only_I_as_condition=False):
     # If no weight matrix is given, compute optimal weight matrix
     if W is None:
         W = optimal_weight(
-            regressor, target, instrument, conditioning=conditioning)
+            regressor, target, instrument, conditioning=conditioning
+        )
 
-    return civ.civ(
-        X=regressor, Y=target, I=instrument, B=conditioning, W=W)
+    output = civ.civ(
+        X=regressor, Y=target, I=instrument, B=conditioning, W=W, return_estimator_covariance=confidence_intervals
+        )
+        
+    if not confidence_intervals:
+        return output
+    else:
+        estimate, covariance_matrix = output
+        return estimate, get_confidence_interval(estimate, covariance_matrix, alpha, X.shape[0])
+        
+    
 
 
-def ts_niv(X, Y, I, n_lags=None, W=None):
+def ts_niv(X, Y, I, n_lags=None, W=None, confidence_intervals: bool=False, alpha=0.05):
     """
     Compute the ts-niv estimator from observations of time series I, X and Y
 
@@ -53,6 +76,8 @@ def ts_niv(X, Y, I, n_lags=None, W=None):
     - Y: Response time series. nparray shape: (n_obs,) or (n_obs, dims_Y)
     - I: Instrument time series. nparray shape: (n_obs,) or (n_obs, dims_I)
     """
+    assert (not confidence_intervals) or (W is None), 'Confidence intervals are only valid when the optimal weight matrix is computed (and none provided)'
+
     if isinstance(X, (Series, DataFrame)):
         X = X.to_numpy()
     if isinstance(Y, (Series, DataFrame)):
@@ -82,7 +107,14 @@ def ts_niv(X, Y, I, n_lags=None, W=None):
     if W is None:
         W = optimal_weight(regressor, target, instrument, nuisance)
 
-    return civ.civ(X=regressor, Y=target, I=instrument, N=nuisance, W=W)
+    output = civ.civ(
+        X=regressor, Y=target, I=instrument, N=nuisance, W=W, return_estimator_covariance=confidence_intervals
+        )
+    if not confidence_intervals:
+        return output
+    else:
+        estimate, covariance_matrix = output
+        return estimate, get_confidence_interval(estimate, covariance_matrix, alpha, X.shape[0])
 
 def optimal_weight(regressor,
                    target,

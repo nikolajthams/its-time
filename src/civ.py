@@ -57,12 +57,13 @@ def cov(a, b=None):
     return Sigma[:d_a, d_a:]
 
 
-def civ(X,
-        Y,
-        I,
-        B=None,
-        N=None,
-        W=None,
+def civ(X: np.ndarray,
+        Y: np.ndarray,
+        I: np.ndarray,
+        B: np.ndarray=None,
+        N: np.ndarray=None,
+        W: np.ndarray=None,
+        return_estimator_covariance: bool=False,
         predict = lambda x,b: sm.OLS(x, b).fit().predict()):
     """
     Compute the causal effect of X on Y using instrument I and conditioning set B.
@@ -89,7 +90,9 @@ def civ(X,
             r_N = get_2d(N) - get_2d(predict(get_2d(N), get_2d(B)))
         # Run unconditional IV on residuals
         return civ(
-            r_X, r_Y, r_I, B=None, W=W, N=(r_N if N is not None else None))
+            r_X, r_Y, r_I, B=None, W=W, N=(r_N if N is not None else None),
+            return_estimator_covariance=return_estimator_covariance
+            )
     # If no conditioning set given, run unconditional IV
     else:
         # Set weight matrix if not given
@@ -126,7 +129,16 @@ def civ(X,
                               covregI @ weights @ covIY,
                               assume_a='pos')
 
-        return estimates if N is None else estimates[:X.shape[1]]
+
+        estimates = estimates if N is None else estimates[:X.shape[1]]
+        if return_estimator_covariance:
+            covariance = slg.solve(cho @ cho.T,
+                            np.eye(cho.shape[0]),
+                            assume_a='pos')
+            return estimates, covariance[:X.shape[1],:X.shape[1]]
+        else:
+            return estimates
+        
 
 
 def align(ref, lagged, tuples=False, min_lag = 0):
