@@ -7,7 +7,7 @@ options(tikzMetricPackages = c("\\usepackage[utf8]{inputenc}",
                                "\\usepackage{amssymb,amsmath}"))
 
 use.tikz <- T
-path = "fig-8"
+path = "fig-11"
 
 # Load
 df <- read_delim("results.csv", delim=",", col_types=cols(strength="f", method="f", n="f"))

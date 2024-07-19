@@ -107,5 +107,5 @@ if __name__ == "__main__":
     n_reps = 1000
     results = [i for x in tqdm(map(one_simulation, range(n_reps)), total=n_reps) for i in x]
     df = pd.DataFrame(results)
-    df.to_csv("experiments/fig-8/sqrt-results.csv", index=False)
+    df.to_csv("experiments/fig-11/sqrt-results.csv", index=False)
 
